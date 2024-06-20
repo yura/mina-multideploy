@@ -20,19 +20,23 @@ FileUtils.mkdir_p c_dir unless File.exist?(c_dir)
 FileUtils.mkdir_p l_dir unless File.exist?(l_dir)
 
 # Deploy script
-Parallel.each(SERVERS, in_threads: SERVERS.length) do |ip, names|
-  bar = multibar.register("#{ip.ljust(max_ip_length)} [:current/:total] :report", total: names.size)
+Parallel.each(SERVERS, in_threads: SERVERS.length) do |ip_with_port, names|
+  bar = multibar.register("#{ip_with_port.ljust(max_ip_length)} [:current/:total] :report", total: names.size)
   bar.start
 
   report = ''
   bar.advance(0, report: report)
 
   names.each do |site|
-    c_file_name = "#{ip}-#{site}.rb"
-    l_file_name = "#{ip}-#{site}.log"
+    c_file_name = "#{ip_with_port.gsub(/:/, '_')}-#{site}.rb"
+    l_file_name = "#{ip_with_port.gsub(/:/, '_')}-#{site}.log"
 
     custom_deploy_config = original_deploy_config.gsub(/^set :application_name(.*)/, "set :application_name, :#{site}")
+    ip, port = ip_with_port.split(':')
     custom_deploy_config = custom_deploy_config.gsub(/^set :domain(.*)/, "set :domain, '#{ip}'")
+    if port
+      custom_deploy_config = custom_deploy_config.gsub(/^set :port(.*)/, "set :port, '#{port}'")
+    end
 
     FileUtils.rm "#{l_dir}/#{l_file_name}" if File.exist?("#{l_dir}/#{l_file_name}")
     File.write("#{c_dir}/#{c_file_name}", custom_deploy_config)

@@ -47,13 +47,13 @@ end
 
 ## Configuration
 
-*`servers`* - hash at format `domain` => `array of application_name's`.
+*`servers`* - hash at format `domain` => `array of application_name's`. Domain can contain port number.
 
 Example:
 ```ruby
 config.servers = {
   '84.155.207.209' => %w[carghana caryange cartanzania]
-  '105.87.69.69'   => %w[poster]
+  '105.87.69.69:2222'   => %w[poster]
   '48.84.207.183'  => %w[codica timebot]
 }
 ```
